@@ -39,9 +39,10 @@ case "$1" in
 		echo "Setting Up OpenSSH-Server - Input authorized_keys"
 		read -r
 		sudo nano -w ~/.ssh/authorized_keys
-		echo "Harden OpenSSH Config"
-		read -r
-		sudo nano -w /etc/ssh/sshd_config
+		echo "Hardening OpenSSH Config"
+		sed -i 's~#Port 22~Port 4216~g' /etc/ssh/sshd_config
+		sed -i 's~#ChallengeResponseAuthentication yes~ChallengeResponseAuthentication no~g' /etc/ssh/sshd_config
+		sed -i 's~#PasswordAuthentication yes~PasswordAuthentication no~g' /etc/ssh/sshd_config
 		echo "Rebooting To Apply Updates"
 		read -r
 		sudo rm -f /bin/sh && sudo ln -sf bash /bin/sh && sudo reboot
