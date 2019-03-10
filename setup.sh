@@ -43,6 +43,10 @@ case "$1" in
 		sed -i 's~#Port 22~Port 4216~g' /etc/ssh/sshd_config
 		sed -i 's~#ChallengeResponseAuthentication yes~ChallengeResponseAuthentication no~g' /etc/ssh/sshd_config
 		sed -i 's~#PasswordAuthentication yes~PasswordAuthentication no~g' /etc/ssh/sshd_config
+		echo "Adding MOTD"
+		read -r
+		rm -rf /etc/update-motd.d/80-livepatch
+		sudo nano -w /etc/update-motd.d/10-help-text
 		echo "Rebooting To Apply Updates"
 		read -r
 		sudo rm -f /bin/sh && sudo ln -sf bash /bin/sh && sudo reboot
