@@ -157,7 +157,7 @@ clean_tree()
 	echo -e "*** $(date +%R) - $FWMODEL code ready.\n"
 }
 
-localver="$(git -C ~/amng.ax88 rev-parse HEAD)"
+localver="$(cat ~/Desktop/git.txt)"
 remotever="$(git -C ~/amng.ax88 rev-parse origin/rtax88)"
 
 if [ "$localver" = "$remotever" ] && [ "$1" != "force" ]; then
@@ -264,6 +264,9 @@ else
 	if [ -n "$FINAL_LOC" ]; then
 		scp -P 4216 *.w $FINAL_LOC/
 	fi
+
+	git -C ~/amng.ax88 rev-parse HEAD > ~/Desktop/git.txt
+
 fi
 
 echo "=== $(date +%R) - All done!"
