@@ -158,7 +158,7 @@ clean_tree()
 }
 
 localver="$(cat ~/Desktop/git.txt)"
-remotever="$(git -C ~/amng.ax88 rev-parse origin/rtax88)"
+remotever="$(git ls-remote https://github.com/RMerl/asuswrt-merlin.ng.git refs/heads/rtax88 | awk '{print $1}')"
 
 if [ "$localver" = "$remotever" ] && [ "$1" != "force" ]; then
 	echo "RT-AX88U Build Up-To-Date - Exiting"

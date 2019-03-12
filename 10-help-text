@@ -17,7 +17,7 @@ uptime | xargs
 echo "Last Build - $(date -r /home/skynet/Desktop/git.txt "+%d-%m-%Y %H:%M:%S")"
 echo
 localver="$(cat /home/skynet/Desktop/git.txt)"
-remotever="$(git -C /home/skynet/amng.ax88 rev-parse origin/rtax88)"
+remotever="$(git ls-remote https://github.com/RMerl/asuswrt-merlin.ng.git refs/heads/rtax88 | awk '{print $1}')"
 if [ "$localver" = "$remotever" ]; then
         echo "Build up-to-date - $localver"
 else
