@@ -67,7 +67,7 @@ STAGE_LOC=~/images
 # Copy built images there
 # Copy is done using scp, so it can be an ssh location
 #FINAL_LOC=""
-FINAL_LOC=admin@192.168.1.68:/share/Storage/Firmware
+FINAL_LOC=admin@192.168.1.69:/share/Storage/Firmware
 
 # Location of the original source code
 SRC_LOC=~/asuswrt-merlin.ng
