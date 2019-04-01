@@ -1,5 +1,5 @@
 #!/bin/sh
-# VPNFlix By Adamm - 26/9/18
+# VPNFlix By Adamm - 01/04/18
 # Route Netflix Traffic Thorugh VPN Client1
 
 Check_Lock () {
@@ -25,15 +25,16 @@ case "$1" in
 		if ! ipset -L -n VPNFlix-Netflix >/dev/null 2>&1; then ipset -q create VPNFlix-Netflix hash:net timeout 604800; fi
 		if ! ipset -L -n VPNFlix-Other >/dev/null 2>&1; then ipset -q create VPNFlix-Other hash:net timeout 604800; fi
 		if ! ipset -L -n VPNFlix-Master >/dev/null 2>&1; then ipset -q create VPNFlix-Master list:set; ipset -q -A VPNFlix-Master VPNFlix-Netflix; ipset -q -A VPNFlix-Master VPNFlix-Other; fi
-		ip rule del fwmark 0x7000/0x7000 2>/dev/null
-		ip rule add fwmark 0x7000/0x7000 table 254 prio 9990 2>/dev/null
-		ip rule del fwmark 0x1000/0x1000 2>/dev/null
-		ip rule add fwmark 0x1000/0x1000 table 111 prio 9991 2>/dev/null
-		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
-		iptables -A PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+		FWMARK_WAN="0x8000/0x8000"
+		FWMARK_OVPNC1="0x1000/0x1000"
+		ip rule del fwmark "$FWMARK_WAN" > /dev/null 2>&1
+		ip rule add from 0/0 fwmark "$FWMARK_WAN" table 254 prio 9990
+		ip rule del fwmark "$FWMARK_OVPNC1" > /dev/null 2>&1
+		ip rule add from 0/0 fwmark "$FWMARK_OVPNC1" table 111 prio 9995
+		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
+		iptables -A PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
 		sed -i '\~#VPNFlix~d' /jffs/configs/dnsmasq.conf.add
 		echo "ipset=/netflix.com/nflxvideo.net/nflxso.net/nflxext.com/nflximg.net/VPNFlix-Netflix #VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		echo "ipset=/bmx-tv.net/bmxtvfeeds.top/bigbro2018-lh.akamaihd.net/jwpltx.com/VPNFlix-Other #VPNFlix" >> /jffs/configs/dnsmasq.conf.add
 		chmod +x /jffs/configs/dnsmasq.conf.add
 		cru d VPNFlix_save
 		cru a VPNFlix_save "30 * * * * sh /jffs/scripts/vpnflix.sh save"
@@ -47,9 +48,9 @@ case "$1" in
 	disable)
 		Check_Lock "$@"
 		echo "Disabing VPNFlix Policy Routing..."
-		ip rule del fwmark 0x7000/0x7000
-		ip rule del fwmark 0x1000/0x7000
-		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark 0x1000/0x1000
+		ip rule del fwmark "$FWMARK_WAN" > /dev/null 2>&1
+		ip rule del fwmark "$FWMARK_OVPNC1" > /dev/null 2>&1
+		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
 		if ipset -L -n VPNFlix-Master >/dev/null 2>&1; then { ipset save VPNFlix-Netflix; ipset save VPNFlix-Other; ipset save VPNFlix-Master; } > "/jffs/scripts/vpnflix.ipset" 2>/dev/null; fi
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
