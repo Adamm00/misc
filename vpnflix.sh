@@ -1,5 +1,5 @@
 #!/bin/sh
-# VPNFlix By Adamm - 06/04/18
+# VPNFlix By Adamm - 15/04/18
 # Route Netflix Traffic Thorugh VPN Client1
 
 FWMARK_WAN="0x8000/0x8000"
@@ -14,6 +14,19 @@ Check_Lock () {
 			echo "$@" > /tmp/vpnflix.lock
 			echo "$$" >> /tmp/vpnflix.lock
 		fi
+}
+
+Populate_Config () {
+		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
+			touch /jffs/configs/dnsmasq.conf.add
+		fi
+		sed -i '\~#VPNFlix~d' /jffs/configs/dnsmasq.conf.add
+		{
+		echo "ipset=/netflix.com/nflxvideo.net/nflxso.net/nflxext.com/nflximg.net/VPNFlix-Netflix #VPNFlix"
+		echo "server=/netflix.com/127.0.1.1#53 #VPNFlix"
+		echo "address=/netflix.com/:: #VPNFlix"
+		} >> /jffs/configs/dnsmasq.conf.add
+		chmod +x /jffs/configs/dnsmasq.conf.add
 }
 
 case "$1" in
@@ -34,11 +47,7 @@ case "$1" in
 		ip rule add from 0/0 fwmark "$FWMARK_OVPNC1" table 111 prio 9995
 		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
 		iptables -A PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
-		sed -i '\~#VPNFlix~d' /jffs/configs/dnsmasq.conf.add
-		echo "ipset=/netflix.com/nflxvideo.net/nflxso.net/nflxext.com/nflximg.net/VPNFlix-Netflix #VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		echo "server=/netflix.com/127.0.0.1#5453 #VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		echo "address=/netflix.com/:: #VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		chmod +x /jffs/configs/dnsmasq.conf.add
+		Populate_Config
 		cru d VPNFlix_save
 		cru a VPNFlix_save "30 * * * * sh /jffs/scripts/vpnflix.sh save"
 	;;
@@ -74,6 +83,11 @@ case "$1" in
 		else
 			echo "$cmdline" >> /jffs/scripts/firewall-start
 		fi
+		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
+			touch /jffs/configs/dnsmasq.conf.add
+		fi
+		Populate_Config
+		service restart_dnsmasq
 		echo "Complete!"
 	;;
 	*)
