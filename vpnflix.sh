@@ -1,5 +1,5 @@
 #!/bin/sh
-# VPNFlix By Adamm - 15/04/18
+# VPNFlix By Adamm - 26/05/19
 # Route Netflix Traffic Thorugh VPN Client1
 
 FWMARK_WAN="0x8000/0x8000"
@@ -85,6 +85,11 @@ case "$1" in
 		fi
 		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
 			touch /jffs/configs/dnsmasq.conf.add
+		fi
+		if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
+			nvram set dns_local_cache="1"
+		elif [ "$(nvram get dns_local)" != "1" ]; then
+			nvram set dns_local="1"
 		fi
 		Populate_Config
 		service restart_dnsmasq
