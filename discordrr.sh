@@ -1,12 +1,21 @@
 #!/bin/bash
 
-# DiscordRR - Sonarr Discord Notification BOT
+# Discordrr - Sonarr Discord Notification BOT
 # By Adamm - https://github.com/Adamm00
 # 04/10/2019
 
 botname="SkynetBOT"
 avatar="https://i.imgur.com/jZk12SL.png"
-url=""
+webhookurl=""
+
+
+show="$sonarr_series_title"
+grabtitle="$sonarr_release_episodetitles"
+grabseason="$sonarr_release_seasonnumber"
+grabepisode="$sonarr_release_episodenumbers"
+dltitle="$sonarr_episodefile_episodetitles"
+dlseason="$sonarr_episodefile_seasonnumber"
+dlepisode="$sonarr_episodefile_episodenumbers"
 
 
 if [ "$sonarr_eventtype" = "Test" ]; then
@@ -25,7 +34,7 @@ if [ "$sonarr_eventtype" = "Test" ]; then
         ]
       }
 EOF
-      )" $url
+      )" $webhookurl
 elif [ "$sonarr_eventtype" = "Grab" ]; then
   curl -s -H "Content-Type: application/json" \
   -X POST \
@@ -33,26 +42,26 @@ elif [ "$sonarr_eventtype" = "Grab" ]; then
   {
      "username":"$botname",
      "avatar_url":"$avatar",
-     "content":"Downloading: $sonarr_series_title ${sonarr_release_seasonnumber}x${sonarr_release_episodenumbers} - $sonarr_release_episodetitles ($sonarr_release_quality) ($sonarr_release_releasegroup) ($((sonarr_release_size / 1048576 ))MB) @everyone",
+     "content":"Downloading: $show ${grabseason}x${grabepisode} - $grabtitle ($sonarr_release_quality) ($sonarr_release_releasegroup) ($((sonarr_release_size / 1048576 ))MB) @everyone",
      "embeds":[
         {
-           "title":"$sonarr_series_title",
+           "title":"$show",
            "color":16753920,
            "url":"http://www.thetvdb.com/?tab=series&id=${sonarr_series_tvdbid}",
            "fields":[
               {
                  "name":"Series",
-                 "value":"$sonarr_series_title",
+                 "value":"$show",
                  "inline":true
               },
               {
                  "name":"Title",
-                 "value":"$sonarr_release_episodetitles",
+                 "value":"$grabtitle",
                  "inline":true
               },
               {
                  "name":"Episode",
-                 "value":"${sonarr_release_seasonnumber}x${sonarr_release_episodenumbers}",
+                 "value":"${grabseason}x${grabepisode}",
                  "inline":true
               },
               {
@@ -79,7 +88,7 @@ elif [ "$sonarr_eventtype" = "Grab" ]; then
      ]
   }
 EOF
-      )" $url
+      )" $webhookurl
 elif [ "$sonarr_eventtype" = "Download" ]; then
   curl -s -H "Content-Type: application/json" \
   -X POST \
@@ -87,26 +96,26 @@ elif [ "$sonarr_eventtype" = "Download" ]; then
       {
         "username": "$botname",
         "avatar_url": "$avatar",
-        "content": "$(if [ "$sonarr_isupgrade" = "True" ]; then echo "Upgrading"; else echo "Importing"; fi): $sonarr_series_title ${sonarr_episodefile_seasonnumber}x${sonarr_episodefile_episodenumbers} - $sonarr_episodefile_episodetitles ($sonarr_episodefile_quality) @everyone",
+        "content": "$(if [ "$sonarr_isupgrade" = "True" ]; then echo "Upgrading"; else echo "Importing"; fi): $show ${dlseason}x${dlepisode} - $dltitle ($sonarr_episodefile_quality) @everyone",
         "embeds": [
           {
-            "title": "$sonarr_series_title",
+            "title": "$show",
             "color": 2605644,
             "url": "http://www.thetvdb.com/?tab=series&id=${sonarr_series_tvdbid}",
             "fields":[
                {
                   "name":"Series",
-                  "value":"$sonarr_series_title",
+                  "value":"$show",
                   "inline":true
                },
                {
                   "name":"Title",
-                  "value":"$sonarr_episodefile_episodetitles",
+                  "value":"$dltitle",
                   "inline":true
                },
                {
                   "name":"Episode",
-                  "value":"${sonarr_episodefile_seasonnumber}x${sonarr_episodefile_episodenumbers}",
+                  "value":"${dlseason}x${dlepisode}",
                   "inline":true
                },
                {
@@ -123,7 +132,7 @@ elif [ "$sonarr_eventtype" = "Download" ]; then
         ]
       }
 EOF
-      )" $url
+      )" $webhookurl
 elif [ "$sonarr_eventtype" = "Rename" ]; then
   curl -s -H "Content-Type: application/json" \
   -X POST \
@@ -134,10 +143,10 @@ elif [ "$sonarr_eventtype" = "Rename" ]; then
         "content": "Renamed",
         "embeds": [
           {
-            "title": "$sonarr_series_title"
+            "title": "$show"
           }
         ]
       }
 EOF
-      )" $url
+      )" $webhookurl
 fi
