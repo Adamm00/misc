@@ -6,7 +6,7 @@
 
 botname="SkynetBOT"
 avatar="https://i.imgur.com/jZk12SL.png"
-webhookurl="https://discordapp.com/api/webhooks/629597636906975242/8DBE98D6khLvD88O76ysfAGgKKotSSq6-yqbbuJu6SGNZgEr9JehQPmB60bsB8DlFHoe"
+webhookurl=""
 
 show="$sonarr_series_title"
 grabtitle="$sonarr_release_episodetitles"
