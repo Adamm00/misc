@@ -1,8 +1,8 @@
 #!/bin/sh
 clear
 echo "############################################################################"
-echo "#                 09/03/2019 | Custom Firmware Manager v4.0                #"
-echo "#                   Please Select Mode ( setup / reset )                   #"
+echo "#                 10/10/2019 | Custom Firmware Manager v4.0                #"
+echo "#                   Please Select Mode ( install / repo )                  #"
 echo "############################################################################"
 echo
 echo
@@ -53,7 +53,7 @@ case "$1" in
 	;;
 
 	repo)
-		sudo rm -rf ~/am-toolchains ~/asuswrt-merlin /opt
+		sudo rm -rf ~/am-toolchains ~/amng /opt
 		sudo mkdir -p /opt
 		cd ~ || exit 1
 		if [ ! -d ~/am-toolchains ]; then
@@ -64,8 +64,8 @@ case "$1" in
 			echo "PATH=\$PATH:/opt/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin"
 			echo "PATH=\$PATH:/opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin"; } >> ~/.profile
 		fi
-		if [ ! -d ~/asuswrt-merlin.ng ]; then
-			git clone https://github.com/RMerl/asuswrt-merlin.ng
+		if [ ! -d ~/amng ]; then
+			git clone https://github.com/RMerl/asuswrt-merlin.ng amng
 		fi
 	;;
 
