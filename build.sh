@@ -56,8 +56,7 @@ STAGE_LOC=~/images
 FINAL_LOC=admin@192.168.1.69:/share/Storage/Firmware
 
 # Location of the original source code
-# SRC_LOC=~/amng
-SRC_LOC=~/asuswrt-merlin.ng
+SRC_LOC=~/amng
 
 ### End config
 
