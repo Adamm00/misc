@@ -1,7 +1,7 @@
 #!/bin/sh
 clear
 echo "############################################################################"
-echo "#                 10/10/2019 | Custom Firmware Manager v4.0                #"
+echo "#                 15/10/2019 | Custom Firmware Manager v4.1                #"
 echo "#                   Please Select Mode ( install / repo )                  #"
 echo "############################################################################"
 echo
@@ -43,7 +43,7 @@ case "$1" in
 		sed -i 's~#PasswordAuthentication yes~PasswordAuthentication no~g' /etc/ssh/sshd_config
 		echo "Adding MOTD"
 		read -r
-		rm -rf /etc/update-motd.d/80-livepatch
+		rm -rf /etc/update-motd.d/80-livepatch /etc/update-motd.d/50-motd-news /etc/update-motd.d/80-esm /etc/update-motd.d/91-release-upgrade /etc/update-motd.d/95-hwe-eol
 		sudo nano -w /etc/update-motd.d/10-help-text
 		echo "Rebooting To Apply Updates"
 		read -r
