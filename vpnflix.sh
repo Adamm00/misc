@@ -29,11 +29,9 @@ Populate_Config () {
 		nflximg.net
 		netflix.net"
 
-		echo "ipset=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")VPNFlix-Netflix # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		for domain in $domainlist; do
-			echo "server=/$domain/127.0.1.1#53 # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-			echo "address=/$domain/:: # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		done
+		{ echo "ipset=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")VPNFlix-Netflix # VPNFlix"
+		echo "server=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")127.0.1.1#53 # VPNFlix"
+		echo "address=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"; } >> /jffs/configs/dnsmasq.conf.add
 		chmod +x /jffs/configs/dnsmasq.conf.add
 		service restart_dnsmasq
 }
@@ -42,6 +40,25 @@ case "$1" in
 
 	start)
 		Check_Lock "$@"
+		if [ ! -f "/jffs/scripts/firewall-start" ]; then
+			echo "#!/bin/sh" > /jffs/scripts/firewall-start
+		elif [ -f "/jffs/scripts/firewall-start" ] && ! head -1 /jffs/scripts/firewall-start | grep -qE "^#!/bin/sh"; then
+			sed -i '1s~^~#!/bin/sh\n~' /jffs/scripts/firewall-start
+		fi
+		cmdline="sh /jffs/scripts/vpnflix.sh start # VPNFlix"
+		if grep -E "sh /jffs/scripts/vpnflix.sh .* # VPNFlix" /jffs/scripts/firewall-start 2>/dev/null | grep -qvE "^#"; then
+			sed -i "s~sh /jffs/scripts/vpnflix.sh .* # VPNFlix .*~$cmdline~" /jffs/scripts/firewall-start
+		else
+			echo "$cmdline" >> /jffs/scripts/firewall-start
+		fi
+		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
+			touch /jffs/configs/dnsmasq.conf.add
+		fi
+		if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
+			nvram set dns_local_cache="1"
+		elif [ "$(nvram get dns_local)" != "1" ]; then
+			nvram set dns_local="1"
+		fi
 		if [ -d "/opt/bin" ] && [ ! -f "/opt/bin/vpnflix" ]; then
 			ln -s /jffs/scripts/vpnflix.sh /opt/bin/vpnflix
 		fi
@@ -78,31 +95,6 @@ case "$1" in
 		ipset destroy VPNFlix-Other
 		echo "Complete!"
 	;;
-	install)
-		Check_Lock "$@"
-		echo "Installing VPNFlix..."
-		if [ ! -f "/jffs/scripts/firewall-start" ]; then
-			echo "#!/bin/sh" > /jffs/scripts/firewall-start
-		elif [ -f "/jffs/scripts/firewall-start" ] && ! head -1 /jffs/scripts/firewall-start | grep -qE "^#!/bin/sh"; then
-			sed -i '1s~^~#!/bin/sh\n~' /jffs/scripts/firewall-start
-		fi
-		cmdline="sh /jffs/scripts/vpnflix.sh start # VPNFlix"
-		if grep -E "sh /jffs/scripts/vpnflix.sh .* # VPNFlix" /jffs/scripts/firewall-start 2>/dev/null | grep -qvE "^#"; then
-			sed -i "s~sh /jffs/scripts/vpnflix.sh .* # VPNFlix .*~$cmdline~" /jffs/scripts/firewall-start
-		else
-			echo "$cmdline" >> /jffs/scripts/firewall-start
-		fi
-		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
-			touch /jffs/configs/dnsmasq.conf.add
-		fi
-		if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
-			nvram set dns_local_cache="1"
-		elif [ "$(nvram get dns_local)" != "1" ]; then
-			nvram set dns_local="1"
-		fi
-		Populate_Config
-		echo "Complete!"
-	;;
 	uninstall)
 		Check_Lock "$@"
 		echo "Uninstalling VPNFlix..."
@@ -118,7 +110,7 @@ case "$1" in
 	;;
 	*)
 		echo "Command Not Recognized, Please Try Again"
-		echo "Accepted Commands Are; (sh $0 [start|save|disable|install|uninstall])"
+		echo "Accepted Commands Are; (sh $0 [start|save|disable|uninstall])"
 		echo; exit 2
 	;;
 esac
