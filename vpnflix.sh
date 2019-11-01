@@ -1,5 +1,5 @@
 #!/bin/sh
-# VPNFlix By Adamm - 26/05/19
+# VPNFlix By Adamm - 02/11/19
 # Route Netflix Traffic Thorugh VPN Client1
 
 FWMARK_WAN="0x8000/0x8000"
@@ -20,13 +20,22 @@ Populate_Config () {
 		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
 			touch /jffs/configs/dnsmasq.conf.add
 		fi
-		sed -i '\~#VPNFlix~d' /jffs/configs/dnsmasq.conf.add
-		{
-		echo "ipset=/netflix.com/nflxvideo.net/nflxso.net/nflxext.com/nflximg.net/VPNFlix-Netflix #VPNFlix"
-		echo "server=/netflix.com/127.0.1.1#53 #VPNFlix"
-		echo "address=/netflix.com/:: #VPNFlix"
-		} >> /jffs/configs/dnsmasq.conf.add
+		sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add
+		domainlist="\
+		netflix.com
+		nflxvideo.net
+		nflxso.net
+		nflxext.com
+		nflximg.net
+		netflix.net"
+
+		echo "ipset=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")VPNFlix-Netflix # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
+		for domain in $domainlist; do
+		  echo "server=/$domain/127.0.1.1#53 # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
+		  echo "address=/$domain/:: # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
+		done
 		chmod +x /jffs/configs/dnsmasq.conf.add
+		service restart_dnsmasq
 }
 
 case "$1" in
@@ -92,15 +101,25 @@ case "$1" in
 			nvram set dns_local="1"
 		fi
 		Populate_Config
-		service restart_dnsmasq
+		echo "Complete!"
+	;;
+	uninstall)
+		Check_Lock "$@"
+		echo "Uninstalling VPNFlix..."
+		sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add /jffs/scripts/firewall-start
+		ip rule del fwmark "$FWMARK_WAN" > /dev/null 2>&1
+		ip rule del fwmark "$FWMARK_OVPNC1" > /dev/null 2>&1
+		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
+		ipset destroy VPNFlix-Master
+		ipset destroy VPNFlix-Netflix
+		ipset destroy VPNFlix-Other
 		echo "Complete!"
 	;;
 	*)
 		echo "Command Not Recognized, Please Try Again"
-		echo "Accepted Commands Are; (sh $0 [start|save|disable])"
+		echo "Accepted Commands Are; (sh $0 [start|save|disable|install|uninstall])"
 		echo; exit 2
 	;;
-
 esac
 
 if [ -f "/tmp/vpnflix.lock" ] && [ "$$" = "$(sed -n '2p' /tmp/vpnflix.lock)" ]; then rm -rf "/tmp/vpnflix.lock"; fi
