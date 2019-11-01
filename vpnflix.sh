@@ -113,6 +113,7 @@ case "$1" in
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
 		ipset destroy VPNFlix-Other
+		rm -rf /jffs/scripts/vpnflix.ipset
 		echo "Complete!"
 	;;
 	*)
