@@ -31,8 +31,8 @@ Populate_Config () {
 
 		echo "ipset=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")VPNFlix-Netflix # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
 		for domain in $domainlist; do
-		  echo "server=/$domain/127.0.1.1#53 # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
-		  echo "address=/$domain/:: # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
+			echo "server=/$domain/127.0.1.1#53 # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
+			echo "address=/$domain/:: # VPNFlix" >> /jffs/configs/dnsmasq.conf.add
 		done
 		chmod +x /jffs/configs/dnsmasq.conf.add
 		service restart_dnsmasq
