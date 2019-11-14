@@ -1,4 +1,6 @@
 #!/bin/sh
+# PIA IP Rotator By Adamm - 14/11/19
+# Rotate PIA Server IP's To Avoid Geo-Blocking
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
 	ln -s /jffs/scripts/pia.sh /opt/bin/pia
@@ -69,10 +71,10 @@ if ! echo "$server" | Is_IP; then
 	echo
 	echo "Individual Server IP's:"
 	echo
-	nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2'
+	nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | grep -v -f /jffs/scripts/pia.blacklist | awk 'NR>2'
 	echo
 	echo "Rotating IP List"
-	for serverip in $(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2'); do
+	for serverip in $(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | grep -v -f /jffs/scripts/pia.blacklist | awk 'NR>2'); do
 		if ping -q -w3 -c1 "$serverip" >/dev/null 2>&1; then
 			nvram set "vpn_client${serverclient}_addr=$serverip"
 			nvram commit
@@ -93,6 +95,7 @@ if ! echo "$server" | Is_IP; then
 					;;
 					2)
 						echo "Attempting next IP"
+						echo "$serverip" >> /jffs/scripts/pia.blacklist
 						break
 					;;
 					e|exit|back|menu)
