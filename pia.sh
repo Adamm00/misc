@@ -10,6 +10,10 @@ Is_IP () {
 		grep -qE '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
 }
 
+if [ ! -f /jffs/scripts/pia.blacklist ]; then
+	touch /jffs/scripts/pia.blacklist
+fi
+
 echo "PIA Server Selecter"
 while true; do
 echo
@@ -71,10 +75,17 @@ if ! echo "$server" | Is_IP; then
 	echo
 	echo "Individual Server IP's:"
 	echo
-	nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | grep -v -f /jffs/scripts/pia.blacklist | awk 'NR>2'
+	serverlist="$(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2')"
+	for ip in $serverlist; do
+		if echo "$ip" | grep -qf /jffs/scripts/pia.blacklist; then
+			echo "$ip - [Blacklisted]"
+		else
+			echo "$ip"
+		fi
+	done
 	echo
 	echo "Rotating IP List"
-	for serverip in $(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | grep -v -f /jffs/scripts/pia.blacklist | awk 'NR>2'); do
+	for serverip in $(echo "$serverlist" | grep -v -f /jffs/scripts/pia.blacklist); do
 		if ping -q -w3 -c1 "$serverip" >/dev/null 2>&1; then
 			nvram set "vpn_client${serverclient}_addr=$serverip"
 			nvram commit
@@ -113,4 +124,3 @@ if ! echo "$server" | Is_IP; then
 		fi
 	done
 fi
-service "restart_vpnclient${serverclient}"
