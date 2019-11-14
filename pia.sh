@@ -1,5 +1,5 @@
 #!/bin/sh
-# PIA IP Rotator By Adamm - 14/11/19
+# PIA IP Rotator By Adamm - 15/11/19
 # Rotate PIA Server IP's To Avoid Geo-Blocking
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
@@ -85,7 +85,7 @@ if ! echo "$server" | Is_IP; then
 	done
 	echo
 	echo "Rotating IP List"
-	for serverip in $(echo "$serverlist" | grep -v -f /jffs/scripts/pia.blacklist); do
+	for serverip in $(echo "$serverlist" | grep -vf /jffs/scripts/pia.blacklist); do
 		if ping -q -w3 -c1 "$serverip" >/dev/null 2>&1; then
 			nvram set "vpn_client${serverclient}_addr=$serverip"
 			nvram commit
