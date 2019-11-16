@@ -46,7 +46,7 @@ elif [ "$sonarr_eventtype" = "Grab" ]; then
   {
   	"username": "$botname",
   	"avatar_url": "$avatar",
-  	"content": "Downloading: $show ${grabseason}x${grabepisode} - $grabtitle ($sonarr_release_quality) ($sonarr_release_releasegroup) ($size) @everyone",
+  	"content": "Downloading: $show ${grabseason}x${grabepisode} - $grabtitle ($sonarr_release_quality) ($sonarr_release_releasegroup) ($ssize) @everyone",
   	"embeds": [{
   		"title": "$show",
   		"color": 16753920,
@@ -78,7 +78,7 @@ elif [ "$sonarr_eventtype" = "Grab" ]; then
   			},
   			{
   				"name": "Size",
-  				"value": "$size",
+  				"value": "$ssize",
   				"inline": true
   			}
   		],
