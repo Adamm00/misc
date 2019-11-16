@@ -2,7 +2,7 @@
 
 # Discordrr - Sonarr & Radarr Discord Notification BOT
 # By Adamm - https://github.com/Adamm00
-# 04/10/2019
+# 17/11/2019
 
 botname="SkynetBOT"
 avatar="https://i.imgur.com/jZk12SL.png"
@@ -15,6 +15,8 @@ grabepisode="$sonarr_release_episodenumbers"
 dltitle="$sonarr_episodefile_episodetitles"
 dlseason="$sonarr_episodefile_seasonnumber"
 dlepisode="$sonarr_episodefile_episodenumbers"
+ssize="$(if [ "$sonarr_release_size" -gt "1073741824" ]; then echo "$sonarr_release_size 1073741824" | awk '{printf "%.2fGB\n", $1/$2}'; else echo $((sonarr_release_size / 1048576 ))MB; fi)"
+rsize="$(if [ "$radarr_release_size" -gt "1073741824" ]; then echo "$radarr_release_size 1073741824" | awk '{printf "%.2fGB\n", $1/$2}'; else echo $((radarr_release_size / 1048576 ))MB; fi)"
 
 if [ -n "$sonarr_eventtype" ]; then
   echo "$sonarr_eventtype - $(date)" >> /scripts/sonarr-debug.txt
@@ -44,7 +46,7 @@ elif [ "$sonarr_eventtype" = "Grab" ]; then
   {
   	"username": "$botname",
   	"avatar_url": "$avatar",
-  	"content": "Downloading: $show ${grabseason}x${grabepisode} - $grabtitle ($sonarr_release_quality) ($sonarr_release_releasegroup) ($((sonarr_release_size / 1048576 ))MB) @everyone",
+  	"content": "Downloading: $show ${grabseason}x${grabepisode} - $grabtitle ($sonarr_release_quality) ($sonarr_release_releasegroup) ($size) @everyone",
   	"embeds": [{
   		"title": "$show",
   		"color": 16753920,
@@ -76,7 +78,7 @@ elif [ "$sonarr_eventtype" = "Grab" ]; then
   			},
   			{
   				"name": "Size",
-  				"value": "$((sonarr_release_size / 1048576 ))MB",
+  				"value": "$size",
   				"inline": true
   			}
   		],
@@ -136,7 +138,7 @@ elif [ "$sonarr_eventtype" = "Rename" ]; then
   {
     "username": "$botname",
     "avatar_url": "$avatar",
-    "content": "Renamed",
+    "content": "Renamed Show",
     "embeds": [{
       "title": "$show"
     }]
@@ -169,7 +171,7 @@ elif [ "$radarr_eventtype" = "Grab" ]; then
   {
   	"username": "$botname",
   	"avatar_url": "$avatar",
-  	"content": "Downloading: $radarr_movie_title [$radarr_release_quality] [$radarr_release_releasegroup] [$((radarr_release_size / 1048576))MB] @everyone",
+  	"content": "Downloading: $radarr_movie_title [$radarr_release_quality] [$radarr_release_releasegroup] [$rsize] @everyone",
   	"embeds": [{
   		"title": "$radarr_movie_title",
   		"color": 16753920,
@@ -196,7 +198,7 @@ elif [ "$radarr_eventtype" = "Grab" ]; then
   			},
   			{
   				"name": "Size",
-  				"value": "$((radarr_release_size / 1048576))MB",
+  				"value": "$rsize",
   				"inline": true
   			}
   		],
@@ -261,7 +263,7 @@ elif [ "$radarr_eventtype" = "Rename" ]; then
   {
     "username": "$botname",
     "avatar_url": "$avatar",
-    "content": "Renamed",
+    "content": "Renamed Movie",
     "embeds": [{
       "title": "$radarr_movie_title"
     }]
