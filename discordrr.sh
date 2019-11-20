@@ -6,7 +6,7 @@
 
 botname="SkynetBOT"
 avatar="https://i.imgur.com/jZk12SL.png"
-webhookurl=""
+webhookurl="https://discordapp.com/api/webhooks/629671129539411999/6G7-rTR16gOI4nHMBQbpMik4eMGBXg1flSIsfZhMxJLZMmRnuyarc7_EDJwIb1SR9cQb"
 
 show="$sonarr_series_title"
 grabtitle="$sonarr_release_episodetitles"
@@ -159,11 +159,6 @@ elif [ "$sonarr_eventtype" = "HealthIssue" ]; then
   				"inline": true
   			},
   			{
-  				"name": "Issue Level",
-  				"value": "$sonarr_health_issue_level",
-  				"inline": true
-  			},
-  			{
   				"name": "Issue Type",
   				"value": "$sonarr_health_issue_type",
   				"inline": true
@@ -171,7 +166,7 @@ elif [ "$sonarr_eventtype" = "HealthIssue" ]; then
   			{
   				"name": "Wiki",
   				"value": "$sonarr_health_issue_wiki",
-  				"inline": true
+  				"inline": false
   			}
   		],
   		"footer": {
@@ -322,11 +317,6 @@ elif [ "$radarr_eventtype" = "HealthIssue" ]; then
   				"inline": true
   			},
   			{
-  				"name": "Issue Level",
-  				"value": "$radarr_health_issue_level",
-  				"inline": true
-  			},
-  			{
   				"name": "Issue Type",
   				"value": "$radarr_health_issue_type",
   				"inline": true
@@ -334,7 +324,7 @@ elif [ "$radarr_eventtype" = "HealthIssue" ]; then
   			{
   				"name": "Wiki",
   				"value": "$radarr_health_issue_wiki",
-  				"inline": true
+  				"inline": false
   			}
   		],
   		"footer": {
