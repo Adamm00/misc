@@ -181,7 +181,7 @@ elif [ "$sonarr_eventtype" = "HealthIssue" ]; then
   	}]
   }
 EOF
-          )" $webhookurl
+      )" $webhookurl
 fi
 
 
@@ -304,6 +304,44 @@ elif [ "$radarr_eventtype" = "Rename" ]; then
     "embeds": [{
       "title": "$radarr_movie_title"
     }]
+  }
+EOF
+      )" $webhookurl
+elif [ "$radarr_eventtype" = "HealthIssue" ]; then
+  curl -s -H "Content-Type: application/json" \
+  -X POST \
+  -d "$(cat <<EOF
+  {
+  	"username": "$botname",
+  	"avatar_url": "$avatar",
+  	"content": "Radarr Health Issue Detected @everyone",
+  	"embeds": [{
+  		"fields": [{
+  				"name": "Message",
+  				"value": "$radarr_health_issue_message",
+  				"inline": true
+  			},
+  			{
+  				"name": "Issue Level",
+  				"value": "$radarr_health_issue_level",
+  				"inline": true
+  			},
+  			{
+  				"name": "Issue Type",
+  				"value": "$radarr_health_issue_type",
+  				"inline": true
+  			},
+  			{
+  				"name": "Wiki",
+  				"value": "$radarr_health_issue_wiki",
+  				"inline": true
+  			}
+  		],
+  		"footer": {
+  			"text": "$(date)",
+  			"icon_url": "$avatar"
+  		}
+  	}]
   }
 EOF
       )" $webhookurl
