@@ -2,7 +2,7 @@
 
 # Discordrr - Sonarr & Radarr Discord Notification BOT
 # By Adamm - https://github.com/Adamm00
-# 20/11/2019
+# 21/11/2019
 
 botname="SkynetBOT"
 avatar="https://i.imgur.com/jZk12SL.png"
@@ -153,19 +153,12 @@ elif [ "$sonarr_eventtype" = "HealthIssue" ]; then
   	"avatar_url": "$avatar",
   	"content": "Sonarr Health Issue Detected @everyone",
   	"embeds": [{
+      "title": "$sonarr_health_issue_type",
+      "color": 15749200,
+      "url": "$sonarr_health_issue_wiki",
   		"fields": [{
   				"name": "Message",
   				"value": "$sonarr_health_issue_message",
-  				"inline": true
-  			},
-  			{
-  				"name": "Issue Type",
-  				"value": "$sonarr_health_issue_type",
-  				"inline": true
-  			},
-  			{
-  				"name": "Wiki",
-  				"value": "$sonarr_health_issue_wiki",
   				"inline": false
   			}
   		],
@@ -311,19 +304,12 @@ elif [ "$radarr_eventtype" = "HealthIssue" ]; then
   	"avatar_url": "$avatar",
   	"content": "Radarr Health Issue Detected @everyone",
   	"embeds": [{
+      "title": "$radarr_health_issue_type",
+      "color": 15749200,
+      "url": "$radarr_health_issue_wiki",
   		"fields": [{
   				"name": "Message",
   				"value": "$radarr_health_issue_message",
-  				"inline": true
-  			},
-  			{
-  				"name": "Issue Type",
-  				"value": "$radarr_health_issue_type",
-  				"inline": true
-  			},
-  			{
-  				"name": "Wiki",
-  				"value": "$radarr_health_issue_wiki",
   				"inline": false
   			}
   		],
