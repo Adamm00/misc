@@ -1,5 +1,5 @@
 #!/bin/sh
-# VPNFlix By Adamm - 02/11/19
+# VPNFlix By Adamm - 22/11/19
 # Route Netflix Traffic Thorugh VPN Client1
 
 FWMARK_WAN="0x8000/0x8000"
@@ -29,9 +29,15 @@ Populate_Config () {
 		nflximg.net
 		netflix.net"
 
+		domainlist2="\
+		whatismyip.host"
+
 		{ echo "ipset=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")VPNFlix-Netflix # VPNFlix"
 		echo "server=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")127.0.1.1#53 # VPNFlix"
-		echo "address=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"; } >> /jffs/configs/dnsmasq.conf.add
+		echo "address=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"
+		echo "ipset=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t")VPNFlix-Other # VPNFlix"
+		echo "server=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t")127.0.1.1#53 # VPNFlix"
+		echo "address=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"; } >> /jffs/configs/dnsmasq.conf.add
 		chmod +x /jffs/configs/dnsmasq.conf.add
 		service restart_dnsmasq
 }
@@ -71,8 +77,12 @@ case "$1" in
 		ip rule add from 0/0 fwmark "$FWMARK_WAN" table 254 prio 9990
 		ip rule del fwmark "$FWMARK_OVPNC1" > /dev/null 2>&1
 		ip rule add from 0/0 fwmark "$FWMARK_OVPNC1" table 111 prio 9995
-		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
-		iptables -A PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
+		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-xmark "$FWMARK_OVPNC1" 2>/dev/null
+		iptables -A PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-xmark "$FWMARK_OVPNC1" 2>/dev/null
+		iptables -D POSTROUTING -t nat -s "$(nvram get vpn_server1_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
+		iptables -A POSTROUTING -t nat -s "$(nvram get vpn_server1_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
+		iptables -D PREROUTING -t mangle -i tun21 -m set --match-set VPNFlix-Master dst -j MARK --set-xmark "$FWMARK_OVPNC1" 2>/dev/null
+		iptables -A PREROUTING -t mangle -i tun21 -m set --match-set VPNFlix-Master dst -j MARK --set-xmark "$FWMARK_OVPNC1" 2>/dev/null
 		Populate_Config
 		cru d VPNFlix_save
 		cru a VPNFlix_save "30 * * * * sh /jffs/scripts/vpnflix.sh save"
