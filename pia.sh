@@ -1,6 +1,8 @@
 #!/bin/sh
-# PIA IP Rotator By Adamm - 15/11/19
-# Rotate PIA Server IP's To Avoid Geo-Blocking
+
+# PIA Rotate - Rotate PIA Server IP's To Avoid Geo-Blocking
+# By Adamm - https://github.com/Adamm00
+# 22/11/2019
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
 	ln -s /jffs/scripts/pia.sh /opt/bin/pia
@@ -20,12 +22,10 @@ echo
 echo "Select VPN Client To Modify:"
 echo
 printf "[1-5]: "
-read -r "client"
+read -r "serverclient"
 echo
-serverclient="$client"
-	case "$client" in
+	case "$serverclient" in
 		1)
-			client=""
 			break
 		;;
 		2)
@@ -48,7 +48,7 @@ serverclient="$client"
 			break
 		;;
 		*)
-			echo "[*] $client Isn't An Option!"
+			echo "[*] $serverclient Isn't An Option!"
 		;;
 	esac
 done

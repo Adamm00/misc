@@ -1,6 +1,8 @@
 #!/bin/sh
-# VPNFlix By Adamm - 22/11/19
-# Route Netflix Traffic Thorugh VPN Client1
+
+# VPNFlix - Route Netflix Traffic Thorugh VPN Client1
+# By Adamm - https://github.com/Adamm00
+# 22/11/2019
 
 FWMARK_WAN="0x8000/0x8000"
 FWMARK_OVPNC1="0x1000/0x1000"
@@ -68,7 +70,9 @@ case "$1" in
 		if [ -d "/opt/bin" ] && [ ! -f "/opt/bin/vpnflix" ]; then
 			ln -s /jffs/scripts/vpnflix.sh /opt/bin/vpnflix
 		fi
-		if [ "$(nvram get vpn_client1_state)" != "2" ]; then nvram set vpn_client1_state="2"; fi
+		if [ "$(nvram get vpn_client1_state)" != "2" ]; then nvram set vpn_client1_state="2"; restartvpn="1"; fi
+		if [ -z "$(nvram get vpn_client_clientlist)" ]; then nvram set vpn_client_clientlist="<DummyVPN>172.16.1.1>0.0.0.0>VPN"; restartvpn="1"; fi
+		if [ -z "$(nvram get vpn_client1_clientlist)" ]; then nvram set vpn_client1_clientlist="<DummyVPN>172.16.1.1>0.0.0.0>VPN"; restartvpn="1"; fi
 		if [ -f "/jffs/scripts/vpnflix.ipset" ]; then ipset restore -! -f "/jffs/scripts/vpnflix.ipset"; fi
 		if ! ipset -L -n VPNFlix-Netflix >/dev/null 2>&1; then ipset -q create VPNFlix-Netflix hash:net timeout 604800; fi
 		if ! ipset -L -n VPNFlix-Other >/dev/null 2>&1; then ipset -q create VPNFlix-Other hash:net timeout 604800; fi
@@ -86,6 +90,7 @@ case "$1" in
 		Populate_Config
 		cru d VPNFlix_save
 		cru a VPNFlix_save "30 * * * * sh /jffs/scripts/vpnflix.sh save"
+		if [ "$restartvpn" = "1" ]; then nvram commit; service "restart_vpnclient1"; fi
 	;;
 	save)
 		Check_Lock "$@"
@@ -99,6 +104,8 @@ case "$1" in
 		ip rule del fwmark "$FWMARK_WAN" > /dev/null 2>&1
 		ip rule del fwmark "$FWMARK_OVPNC1" > /dev/null 2>&1
 		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
+		iptables -D POSTROUTING -t nat -s "$(nvram get vpn_server1_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
+		iptables -D PREROUTING -t mangle -i tun21 -m set --match-set VPNFlix-Master dst -j MARK --set-xmark "$FWMARK_OVPNC1" 2>/dev/null
 		if ipset -L -n VPNFlix-Master >/dev/null 2>&1; then { ipset save VPNFlix-Netflix; ipset save VPNFlix-Other; ipset save VPNFlix-Master; } > "/jffs/scripts/vpnflix.ipset" 2>/dev/null; fi
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
