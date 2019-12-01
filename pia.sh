@@ -106,7 +106,7 @@ if ! echo "$server" | Is_IP; then
 					;;
 					2)
 						echo "Attempting next IP"
-						echo "$serverip" >> /jffs/scripts/pia.blacklist
+						echo "$(echo "$serverip" | cut -d"." -f1-3)."  >> /jffs/scripts/pia.blacklist
 						break
 					;;
 					e|exit|back|menu)
