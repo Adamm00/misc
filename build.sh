@@ -11,7 +11,7 @@
 
 sudo true
 localver="$(cat ~/Desktop/git.txt)"
-remotever="$(git ls-remote https://github.com/RMerl/asuswrt-merlin.ng.git refs/heads/rtax88 | awk '{print $1}')"
+remotever="$(git ls-remote https://github.com/RMerl/asuswrt-merlin.ng.git refs/heads/7756 | awk '{print $1}')"
 
 if [ "$localver" = "$remotever" ] && [ "$1" != "force" ]; then
 	echo "RT-AX88U Build Up-To-Date - Exiting"
@@ -111,7 +111,7 @@ clean_tree()
 	CURRENT=$(git branch | grep \* | cut -d ' ' -f2)
 	if [ "$CURRENT" != "$BRANCH" ] ; then
 		git checkout $BRANCH
-		git pull origin rtax88
+		git pull origin 7756
 	fi
 
 	if [ "$CLEANUP_TREE" == "y" ]; then
@@ -160,7 +160,7 @@ if [ "$BAC86" == "y" ]; then
 	clean_tree amng.ac86 release/src-rt-5.02hnd rt-ac86u mainline
 fi
 if [ "$BAX88" == "y" ]; then
-	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u rtax88
+	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u 7756
 fi
 
 echo -e "--- $(date +%R) - All trees ready!\n"
@@ -201,8 +201,8 @@ if [ "$BAC86" == "y" ]; then
 	sleep 10
 fi
 if [ "$BAX88" == "y" ]; then
-  build_fw amng.ax88/release/src-rt-5.02axhnd rt-ax88u &
-  sleep 10
+	build_fw amng.ax88/release/src-rt-5.02axhnd rt-ax88u &
+	sleep 10
 fi
 
 echo "--- $(date +%R) - All builds launched, please wait..."
