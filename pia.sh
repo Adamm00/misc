@@ -2,7 +2,7 @@
 
 # PIA Rotate - Rotate PIA Server IP's To Avoid Geo-Blocking
 # By Adamm - https://github.com/Adamm00
-# 22/11/2019
+# 17/12/2019
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
 	ln -s /jffs/scripts/pia.sh /opt/bin/pia
@@ -86,6 +86,7 @@ if ! echo "$server" | Is_IP; then
 	echo
 	echo "Rotating IP List"
 	for serverip in $(echo "$serverlist" | grep -vf /jffs/scripts/pia.blacklist); do
+		if echo "$serverip" | grep -qf /jffs/scripts/pia.blacklist; then break; fi
 		if ping -q -w3 -c1 "$serverip" >/dev/null 2>&1; then
 			nvram set "vpn_client${serverclient}_addr=$serverip"
 			nvram commit
