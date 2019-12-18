@@ -1,8 +1,19 @@
 #!/bin/sh
 
-# VPNFlix - Route Netflix Traffic Thorugh VPN Client1
-# By Adamm - https://github.com/Adamm00
-# 22/11/2019
+#####################################################################################
+#                                                                                   #
+#               ██╗   ██╗██████╗ ███╗   ██╗███████╗██╗     ██╗██╗  ██╗              #
+#               ██║   ██║██╔══██╗████╗  ██║██╔════╝██║     ██║╚██╗██╔╝              #
+#               ██║   ██║██████╔╝██╔██╗ ██║█████╗  ██║     ██║ ╚███╔╝               #
+#               ╚██╗ ██╔╝██╔═══╝ ██║╚██╗██║██╔══╝  ██║     ██║ ██╔██╗               #
+#                ╚████╔╝ ██║     ██║ ╚████║██║     ███████╗██║██╔╝ ██╗              #
+#                 ╚═══╝  ╚═╝     ╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝╚═╝  ╚═╝              #
+#                                                                                   #
+#                      Route Netflix Traffic Thorugh VPN Client1                    #
+#                        By Adamm - https://github.com/Adamm00                      #
+#                                   19/12/2019                                      #
+#####################################################################################
+
 
 FWMARK_WAN="0x8000/0x8000"
 FWMARK_OVPNC1="0x1000/0x1000"
@@ -61,11 +72,6 @@ case "$1" in
 		fi
 		if [ ! -f "/jffs/configs/dnsmasq.conf.add" ]; then
 			touch /jffs/configs/dnsmasq.conf.add
-		fi
-		if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
-			nvram set dns_local_cache="1"
-		elif [ "$(nvram get dns_local)" != "1" ]; then
-			nvram set dns_local="1"
 		fi
 		if [ -d "/opt/bin" ] && [ ! -f "/opt/bin/vpnflix" ]; then
 			ln -s /jffs/scripts/vpnflix.sh /opt/bin/vpnflix
