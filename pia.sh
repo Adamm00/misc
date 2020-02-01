@@ -2,18 +2,19 @@
 
 # PIA Rotate - Rotate PIA Server IP's To Avoid Geo-Blocking
 # By Adamm - https://github.com/Adamm00
-# 17/12/2019
+# 01/02/2020
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
-	ln -s /jffs/scripts/pia.sh /opt/bin/pia
+	ln -s /jffs/addons/pia/pia.sh /opt/bin/pia
 fi
 
 Is_IP () {
 		grep -qE '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
 }
 
-if [ ! -f /jffs/scripts/pia.blacklist ]; then
-	touch /jffs/scripts/pia.blacklist
+if [ ! -f /jffs/addons/pia/pia.blacklist ]; then
+	mkdir -p /jffs/addons/pia
+	touch /jffs/addons/pia/pia.blacklist
 fi
 
 echo "PIA Server Selecter"
@@ -77,7 +78,7 @@ if ! echo "$server" | Is_IP; then
 	echo
 	serverlist="$(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2')"
 	for ip in $serverlist; do
-		if echo "$ip" | grep -qf /jffs/scripts/pia.blacklist; then
+		if echo "$ip" | grep -qf /jffs/addons/pia/pia.blacklist; then
 			echo "$ip - [Blacklisted]"
 		else
 			echo "$ip"
@@ -85,8 +86,8 @@ if ! echo "$server" | Is_IP; then
 	done
 	echo
 	echo "Rotating IP List"
-	for serverip in $(echo "$serverlist" | grep -vf /jffs/scripts/pia.blacklist); do
-		if echo "$serverip" | grep -qf /jffs/scripts/pia.blacklist; then break; fi
+	for serverip in $(echo "$serverlist" | grep -vf /jffs/addons/pia/pia.blacklist); do
+		if echo "$serverip" | grep -qf /jffs/addons/pia/pia.blacklist; then break; fi
 		if ping -q -w3 -c1 "$serverip" >/dev/null 2>&1; then
 			nvram set "vpn_client${serverclient}_addr=$serverip"
 			nvram commit
@@ -107,7 +108,7 @@ if ! echo "$server" | Is_IP; then
 					;;
 					2)
 						echo "Attempting next IP"
-						echo "$(echo "$serverip" | cut -d"." -f1-3)."  >> /jffs/scripts/pia.blacklist
+						echo "$(echo "$serverip" | cut -d"." -f1-3)."  >> /jffs/addons/pia/pia.blacklist
 						break
 					;;
 					e|exit|back|menu)
