@@ -2,14 +2,14 @@
 
 # PIA Rotate - Rotate PIA Server IP's To Avoid Geo-Blocking
 # By Adamm - https://github.com/Adamm00
-# 01/02/2020
+# 26/02/2020
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
 	ln -s /jffs/addons/pia/pia.sh /opt/bin/pia
 fi
 
-Is_IP () {
-		grep -qE '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+Is_IP() {
+	grep -qE '^([0-9]{1,3}\.){3}[0-9]{1,3}$'
 }
 
 if [ ! -f /jffs/addons/pia/pia.blacklist ]; then
@@ -19,12 +19,12 @@ fi
 
 echo "PIA Server Selecter"
 while true; do
-echo
-echo "Select VPN Client To Modify:"
-echo
-printf "[1-5]: "
-read -r "serverclient"
-echo
+	echo
+	echo "Select VPN Client To Modify:"
+	echo
+	printf "[1-5]: "
+	read -r "serverclient"
+	echo
 	case "$serverclient" in
 		1)
 			break
@@ -44,7 +44,7 @@ echo
 		list)
 			curl -fs https://www.privateinternetaccess.com/pages/network/ | sed -n 's:.*<p data-label=\"Hostname\" class=\"hostname\">\(.*\)</p>.*:\1:p'
 		;;
-		e|exit|back|menu)
+		e | exit | back | menu)
 			exit 0
 			break
 		;;
@@ -58,19 +58,20 @@ echo
 printf "[IP/URL]: "
 read -r "server"
 case "$server" in
-	e|exit|back|menu)
+	e | exit | back | menu)
 		exit 0
 	;;
 	*)
-	if ping -q -w3 -c1 "$server" >/dev/null 2>&1; then
-		if echo "$server" | Is_IP; then
-			nvram set "vpn_client${serverclient}_addr=$server"
-			nvram commit
+		if ping -q -w3 -c1 "$server" >/dev/null 2>&1; then
+			if echo "$server" | Is_IP; then
+				nvram set "vpn_client${serverclient}_addr=$server"
+				nvram commit
+			fi
+		else
+			echo "Error Connecting To $server"
+			exit 1
 		fi
-	else
-		echo "Error Connecting To $server"
-		exit 1
-	fi
+	;;
 esac
 if ! echo "$server" | Is_IP; then
 	echo
@@ -108,10 +109,10 @@ if ! echo "$server" | Is_IP; then
 					;;
 					2)
 						echo "Attempting next IP"
-						echo "$(echo "$serverip" | cut -d"." -f1-3)."  >> /jffs/addons/pia/pia.blacklist
+						echo "$(echo "$serverip" | cut -d"." -f1-3)." >> /jffs/addons/pia/pia.blacklist
 						break
 					;;
-					e|exit|back|menu)
+					e | exit | back | menu)
 						exit 0
 						break
 					;;
