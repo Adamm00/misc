@@ -10,7 +10,7 @@
 ######
 
 sudo true
-localver="$(cat "$HOME/Desktop/git.txt")"
+localver="$(cat "$HOME/Desktop/git.txt" 2>/dev/null)"
 remotever="$(git ls-remote https://github.com/RMerl/asuswrt-merlin.ng.git ax | awk '{print $1}')"
 
 if [ "$localver" = "$remotever" ] && [ "$1" != "force" ]; then
@@ -115,8 +115,8 @@ clean_tree() {
 
 	CURRENT=$(git branch | grep "\*" | cut -d ' ' -f2)
 	if [ "$CURRENT" != "$BRANCH" ] ; then
-		git checkout "$BRANCH"
-		git pull origin "$BRANCH"
+		git checkout "$BRANCH" >/dev/null 2>&1
+		git pull origin "$BRANCH" >/dev/null 2>&1
 	fi
 
 	if [ "$CLEANUP_TREE" == "y" ]; then
@@ -125,7 +125,7 @@ clean_tree() {
 		rm .config image/*.trx image/*.w >/dev/null 2>&1
 	fi
 
-	echo -e "*** $(date +%R) - $FWMODEL code ready.\n"
+	echo "*** $(date +%R) - $FWMODEL code ready."
 }
 
 # Initial cleanup
@@ -140,6 +140,7 @@ cp "$SRC_LOC"/Changelog*.txt "$STAGE_LOC/"
 # Update all model trees
 
 echo "--- $(date +%R) - Preparing trees"
+echo
 if [ "$BAC56" == "y" ]; then
 	clean_tree amng.ac56 release/src-rt-6.x.4708 rt-ac56u master
 fi
@@ -171,7 +172,7 @@ if [ "$BAX58" == "y" ]; then
 	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u ax
 fi
 
-echo -e "--- $(date +%R) - All trees ready!\n"
+echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
 
