@@ -53,7 +53,7 @@ BAX88=y
 
 # BAX58=y
 
-for model in "$@"; do
+for model in echo ${@//force/}; do
 	declare "$model=y"
 done
 
@@ -79,7 +79,7 @@ build_fw() {
 	FWPATH="$1"
 	echo "*** $(date +%R) - Starting building $FWMODEL..."
 	cd "$HOME/$FWPATH" || exit 1
-	if ! make "$FWMODEL" > output.txt 2>&1; then
+	if make "$FWMODEL" > output.txt 2>&1; then
 		cd image || exit 1
 		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "rt-ax88u" ]; then
 			FWNAME=$(find -- *_cferom_ubi.w | head -n 1)
@@ -94,7 +94,7 @@ build_fw() {
 		cp "$FWNAME" "$STAGE_LOC/"
 
 		sha256sum "$FWNAME" > sha256sum.sha256
-		zip -j "$STAGE_LOC/$ZIPNAME" "$FWNAME" "$STAGE_LOC/README-merlin.txt" "$STAGE_LOC/Changelog*.txt" "sha256sum.sha256" 2>/dev/null
+		zip -qj "$STAGE_LOC/$ZIPNAME" "$FWNAME" "$STAGE_LOC/README-merlin.txt" "$STAGE_LOC"/Changelog*.txt "sha256sum.sha256" 2>/dev/null
 		echo "*** $(date +%R) - Done building $FWMODEL!"
 	else
 		echo "!!! $(date +%R) - $FWMODEL build failed!"
@@ -171,8 +171,8 @@ fi
 if [ "$BAX58" == "y" ]; then
 	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u ax
 fi
-
 echo "--- $(date +%R) - All trees ready!"
+echo
 
 # Launch parallel builds
 
