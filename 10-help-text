@@ -14,12 +14,4 @@
 sed -n '2,13p' "$0"
 
 uptime | xargs
-echo "Last Build - $(date -r /home/skynet/Desktop/git.txt "+%d-%m-%Y %H:%M:%S")"
 echo
-localver="$(cat /home/skynet/Desktop/git.txt)"
-remotever="$(git ls-remote https://github.com/RMerl/asuswrt-merlin.ng.git refs/heads/rtax88 | awk '{print $1}')"
-if [ "$localver" = "$remotever" ]; then
-        echo "Build up-to-date - $localver"
-else
-        echo "Firmware update available - $remotever"
-fi
