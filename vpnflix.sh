@@ -38,7 +38,8 @@ Populate_Config() {
 		nflxso.net
 		nflxext.com
 		nflximg.net
-		netflix.net"
+		netflix.net
+                fast.com"
 
 	domainlist2="\
 		whatismyip.host"
