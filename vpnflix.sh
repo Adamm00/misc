@@ -140,18 +140,14 @@ case "$1" in
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
 		ipset destroy VPNFlix-Other
+                cru d VPNFlix_save
 		echo "Complete!"
 	;;
 	uninstall)
 		Check_Lock "$@"
 		echo "Uninstalling VPNFlix..."
+                sh ./vpnflix.sh disable #disable it first
 		sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add /jffs/scripts/firewall-start
-		ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
-		ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
-		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
-		ipset destroy VPNFlix-Master
-		ipset destroy VPNFlix-Netflix
-		ipset destroy VPNFlix-Other
 		rm -rf /jffs/addons/vpnflix
 		echo "Complete!"
 	;;
