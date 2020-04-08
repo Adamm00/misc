@@ -2,7 +2,7 @@
 
 # PIA Rotate - Rotate PIA Server IP's To Avoid Geo-Blocking
 # By Adamm - https://github.com/Adamm00
-# 26/02/2020
+# 08/04/2020
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
 	ln -s /jffs/addons/pia/pia.sh /opt/bin/pia
@@ -96,7 +96,8 @@ if ! echo "$server" | Is_IP; then
 			while true; do
 				echo "Keep ${serverip}?:"
 				echo "[1]  --> Yes"
-				echo "[2]  --> No"
+				echo "[2]  --> No (Blacklist IP)"
+				echo "[2]  --> No (Blacklist /24)"
 				echo
 				printf "[1-2]: "
 				read -r "menu"
@@ -108,6 +109,11 @@ if ! echo "$server" | Is_IP; then
 						break
 					;;
 					2)
+						echo "Attempting next IP"
+						echo "$serverip" >> /jffs/addons/pia/pia.blacklist
+						break
+					;;
+					3)
 						echo "Attempting next IP"
 						echo "$(echo "$serverip" | cut -d"." -f1-3)." >> /jffs/addons/pia/pia.blacklist
 						break
