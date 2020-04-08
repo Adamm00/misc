@@ -8,9 +8,9 @@
 #                ╚████╔╝ ██║     ██║ ╚████║██║     ███████╗██║██╔╝ ██╗              #
 #                 ╚═══╝  ╚═╝     ╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝╚═╝  ╚═╝              #
 #                                                                                   #
-#                      Route Netflix Traffic Thorugh VPN Client1                    #
-#                        By Adamm - https://github.com/Adamm00                      #
-#                                   26/02/2020                                      #
+#                  Route Netflix/Hulu Traffic Thorugh VPN Client1                   #
+#                       By Adamm - https://github.com/Adamm00                       #
+#                                    08/04/2020                                     #
 #####################################################################################
 
 FWMARK_WAN="0x8000/0x8000"
@@ -32,6 +32,7 @@ Populate_Config() {
 		touch /jffs/configs/dnsmasq.conf.add
 	fi
 	sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add
+
 	domainlist="\
 		netflix.com
 		nflxvideo.net
@@ -41,6 +42,8 @@ Populate_Config() {
 		netflix.net"
 
 	domainlist2="\
+		hulu.com
+		hulustream.com
 		whatismyip.host"
 
 	{
@@ -132,11 +135,13 @@ case "$1" in
 		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
 		iptables -D POSTROUTING -t nat -s "$(nvram get vpn_server1_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
 		iptables -D PREROUTING -t mangle -i tun21 -m set --match-set VPNFlix-Master dst -j MARK --set-xmark "$FWMARK_OVPNC1" 2>/dev/null
-		if ipset -L -n VPNFlix-Master >/dev/null 2>&1; then {
-			ipset save VPNFlix-Netflix
-			ipset save VPNFlix-Other
-			ipset save VPNFlix-Master
-		} > "/jffs/addons/vpnflix/vpnflix.ipset" 2>/dev/null; fi
+		if ipset -L -n VPNFlix-Master >/dev/null 2>&1; then
+			{
+				ipset save VPNFlix-Netflix
+				ipset save VPNFlix-Other
+				ipset save VPNFlix-Master
+			} > "/jffs/addons/vpnflix/vpnflix.ipset" 2>/dev/null
+		fi
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
 		ipset destroy VPNFlix-Other
