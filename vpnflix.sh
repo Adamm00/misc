@@ -179,7 +179,7 @@ case "$1" in
 		fi
 		if [ "$localmd5" != "$remotemd5" ] || [ "$2" = "-f" ] && [ "$noupdate" != "1" ]; then
 			echo "[i] New Version Detected - Updating To $remotever (${remotemd5})"
-			sudo curl -fsL --retry 3 --connect-timeout 3 "${remotedir}/vpnflix.sh" -o "$0"
+			curl -fsL --retry 3 --connect-timeout 3 "${remotedir}/vpnflix.sh" -o "$0"
 			echo "[i] Update Complete!"
 			echo
 			exit 0
