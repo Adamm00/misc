@@ -10,7 +10,7 @@
 #                                                                                   #
 #                  Route Netflix/Hulu Traffic Thorugh VPN Client1                   #
 #                       By Adamm - https://github.com/Adamm00                       #
-#                                    08/04/2020                                     #
+#                                24/04/2020 - v1.0.0                                #
 #####################################################################################
 
 FWMARK_WAN="0x8000/0x8000"
@@ -46,13 +46,19 @@ Populate_Config() {
 		hulustream.com
 		whatismyip.host"
 
+	domainlist3="\
+		whatismyip.host"
+
 	{
 		echo "ipset=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")VPNFlix-Netflix # VPNFlix"
 		echo "server=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t")127.0.1.1#53 # VPNFlix"
 		echo "address=/$(echo "$domainlist" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"
-		echo "ipset=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t")VPNFlix-Other # VPNFlix"
+		echo "ipset=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t")VPNFlix-Hulu # VPNFlix"
 		echo "server=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t")127.0.1.1#53 # VPNFlix"
 		echo "address=/$(echo "$domainlist2" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"
+		echo "ipset=/$(echo "$domainlist3" | tr '\n' '/' | tr -d "\t")VPNFlix-Other # VPNFlix"
+		echo "server=/$(echo "$domainlist3" | tr '\n' '/' | tr -d "\t")127.0.1.1#53 # VPNFlix"
+		echo "address=/$(echo "$domainlist3" | tr '\n' '/' | tr -d "\t"):: # VPNFlix"
 	} >> /jffs/configs/dnsmasq.conf.add
 	chmod +x /jffs/configs/dnsmasq.conf.add
 	service restart_dnsmasq
@@ -93,10 +99,12 @@ case "$1" in
 		fi
 		if [ -f "/jffs/addons/vpnflix/vpnflix.ipset" ]; then ipset restore -! -f "/jffs/addons/vpnflix/vpnflix.ipset"; fi
 		if ! ipset -L -n VPNFlix-Netflix >/dev/null 2>&1; then ipset -q create VPNFlix-Netflix hash:net timeout 604800; fi
+		if ! ipset -L -n VPNFlix-Hulu >/dev/null 2>&1; then ipset -q create VPNFlix-Hulu hash:net timeout 604800; fi
 		if ! ipset -L -n VPNFlix-Other >/dev/null 2>&1; then ipset -q create VPNFlix-Other hash:net timeout 604800; fi
 		if ! ipset -L -n VPNFlix-Master >/dev/null 2>&1; then
 			ipset -q create VPNFlix-Master list:set
 			ipset -q -A VPNFlix-Master VPNFlix-Netflix
+			ipset -q -A VPNFlix-Master VPNFlix-Hulu
 			ipset -q -A VPNFlix-Master VPNFlix-Other
 		fi
 		ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
@@ -122,6 +130,7 @@ case "$1" in
 		echo "Saving VPNFlix Server List..."
 		if ipset -L -n VPNFlix-Master >/dev/null 2>&1; then {
 			ipset save VPNFlix-Netflix
+			ipset save VPNFlix-Hulu
 			ipset save VPNFlix-Other
 			ipset save VPNFlix-Master
 		} > "/jffs/addons/vpnflix/vpnflix.ipset" 2>/dev/null; fi
@@ -138,14 +147,39 @@ case "$1" in
 		if ipset -L -n VPNFlix-Master >/dev/null 2>&1; then
 			{
 				ipset save VPNFlix-Netflix
+				ipset save VPNFlix-Hulu
 				ipset save VPNFlix-Other
 				ipset save VPNFlix-Master
 			} > "/jffs/addons/vpnflix/vpnflix.ipset" 2>/dev/null
 		fi
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
+		ipset destroy VPNFlix-Hulu
 		ipset destroy VPNFlix-Other
 		echo "Complete!"
+	;;
+	update)
+		remotedir="https://raw.githubusercontent.com/Adamm00/misc/master"
+		localver="$(Filter_Version < "$0")"
+		remotever="$(curl -fsL --retry 3 --connect-timeout 3 "${remotedir}/vpnflix.sh" | Filter_Version)"
+		localmd5="$(md5sum "$0" | awk '{print $1}')"
+		remotemd5="$(curl -fsL --retry 3 --connect-timeout 3 "${remotedir}/vpnflix.sh" | md5sum | awk '{print $1}')"
+		if [ "$localmd5" = "$remotemd5" ] && [ "$2" != "-f" ]; then
+			echo "[i] VPNFlix Up To Date - $localver (${localmd5})"
+			noupdate="1"
+		elif [ "$localmd5" != "$remotemd5" ] && [ "$2" = "check" ]; then
+			echo "[i] VPNFlix Update Detected - $remotever (${remotemd5})"
+			noupdate="1"
+		elif [ "$2" = "-f" ]; then
+			echo "[i] Forcing Update"
+		fi
+		if [ "$localmd5" != "$remotemd5" ] || [ "$2" = "-f" ] && [ "$noupdate" != "1" ]; then
+			echo "[i] New Version Detected - Updating To $remotever (${remotemd5})"
+			sudo curl -fsL --retry 3 --connect-timeout 3 "${remotedir}/vpnflix.sh" -o "$0"
+			echo "[i] Update Complete!"
+			echo
+			exit 0
+		fi
 	;;
 	uninstall)
 		Check_Lock "$@"
@@ -156,13 +190,14 @@ case "$1" in
 		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
 		ipset destroy VPNFlix-Master
 		ipset destroy VPNFlix-Netflix
+		ipset destroy VPNFlix-Hulu
 		ipset destroy VPNFlix-Other
 		rm -rf /jffs/addons/vpnflix
 		echo "Complete!"
 	;;
 	*)
 		echo "Command Not Recognized, Please Try Again"
-		echo "Accepted Commands Are; (sh $0 [start|save|disable|uninstall])"
+		echo "Accepted Commands Are; (sh $0 [start|save|disable|update|uninstall])"
 		echo
 		exit 2
 	;;
