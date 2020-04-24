@@ -64,6 +64,10 @@ Populate_Config() {
 	service restart_dnsmasq
 }
 
+Filter_Version() {
+	grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})'
+}
+
 case "$1" in
 	start)
 		Check_Lock "$@"
