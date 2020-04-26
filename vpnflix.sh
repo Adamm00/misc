@@ -180,6 +180,9 @@ case "$1" in
 		if [ -d "/opt/bin" ] && [ ! -f "/opt/bin/vpnflix" ]; then
 			ln -s /jffs/addons/vpnflix/vpnflix.sh /opt/bin/vpnflix
 		fi
+		if ! grep -F "sh /jffs/addons/vpnflix/vpnflix.sh" /jffs/configs/profile.add; then
+			echo "alias vpnflix=\"sh /jffs/addons/vpnflix/vpnflix.sh\" # VPNFlix" >> /jffs/configs/profile.add
+		fi
 		if [ "$(nvram get vpn_client1_state)" != "2" ]; then
 			nvram set vpn_client1_state="2"
 			restartvpn="1"
@@ -300,7 +303,7 @@ case "$1" in
 			case "$continue" in
 				1)
 					echo "[i] Deleting VPNFlix Files"
-					sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add /jffs/scripts/firewall-start
+					sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add /jffs/scripts/firewall-start /jffs/configs/profile.add
 					ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
 					ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
 					iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
