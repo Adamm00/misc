@@ -10,9 +10,12 @@
 #                                                                                   #
 #                  Route Netflix/Hulu Traffic Thorugh VPN Client1                   #
 #                       By Adamm - https://github.com/Adamm00                       #
-#                                24/04/2020 - v1.0.0                                #
+#                                27/04/2020 - v1.0.1                                #
 #####################################################################################
 
+
+clear
+sed -n '2,16p' "$0"
 FWMARK_WAN="0x8000/0x8000"
 FWMARK_OVPNC1="0x1000/0x1000"
 
@@ -43,8 +46,7 @@ Populate_Config() {
 
 	domainlist2="\
 		hulu.com
-		hulustream.com
-		whatismyip.host"
+		hulustream.com"
 
 	domainlist3="\
 		whatismyip.host"
@@ -67,6 +69,95 @@ Populate_Config() {
 Filter_Version() {
 	grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})'
 }
+
+Load_Menu () {
+	reloadmenu="1"
+	while true; do
+		echo "Select Menu Option:"
+		echo "[1]  --> Start VPNFlix"
+		echo "[2]  --> Save"
+		echo "[3]  --> Temporarily Disable VPNFlix"
+		echo "[4]  --> Update VPNFlix"
+		echo "[5]  --> Uninstall"
+		echo
+		echo "[e]  --> Exit Menu"
+		echo
+		printf "[1-5]: "
+		read -r "menu"
+		echo
+		case "$menu" in
+			1)
+				option1="start"
+				break
+			;;
+			2)
+				option1="check"
+				break
+			;;
+			3)
+				option1="disable"
+				break
+			;;
+			4)
+			option1="update"
+			while true; do
+				echo "Select Update Option:"
+				echo "[1]  --> Check For And Install Any New Updates"
+				echo "[2]  --> Check For Updates Only"
+				echo "[3]  --> Force Update Even If No Updates Detected"
+				echo
+				printf "[1-3]: "
+				read -r "menu2"
+				echo
+				case "$menu2" in
+					1)
+						break
+					;;
+					2)
+						option2="check"
+						break
+					;;
+					3)
+						option2="-f"
+						break
+					;;
+					e|exit|back|menu)
+						unset "option1" "option2"
+						clear
+						Load_Menu
+						break
+					;;
+					*)
+						echo "[*] $menu2 Isn't An Option!"
+						echo
+					;;
+				esac
+			done
+			break
+			;;
+			5)
+				option1="uninstall"
+				break
+			;;
+			e|exit)
+				echo "[*] Exiting!"
+				echo; exit 0
+			;;
+			*)
+				echo "[*] $menu Isn't An Option!"
+				echo
+			;;
+		esac
+	done
+}
+
+if [ -z "$1" ]; then
+	Load_Menu
+fi
+
+if [ -n "$option1" ]; then
+	set "$option1" "$option2"
+fi
 
 case "$1" in
 	start)
@@ -129,6 +220,7 @@ case "$1" in
 			service "restart_vpnclient1"
 		fi
 	;;
+
 	save)
 		Check_Lock "$@"
 		echo "Saving VPNFlix Server List..."
@@ -140,6 +232,7 @@ case "$1" in
 		} > "/jffs/addons/vpnflix/vpnflix.ipset" 2>/dev/null; fi
 		echo "Complete! - $(wc -l < /jffs/addons/vpnflix/vpnflix.ipset) Entries Total"
 	;;
+
 	disable)
 		Check_Lock "$@"
 		echo "Disabing VPNFlix Policy Routing..."
@@ -162,7 +255,9 @@ case "$1" in
 		ipset destroy VPNFlix-Other
 		echo "Complete!"
 	;;
+
 	update)
+		Check_Lock "$@"
 		remotedir="https://raw.githubusercontent.com/Adamm00/misc/master"
 		localver="$(Filter_Version < "$0")"
 		remotever="$(curl -fsL --retry 3 --connect-timeout 3 "${remotedir}/vpnflix.sh" | Filter_Version)"
@@ -185,20 +280,51 @@ case "$1" in
 			exit 0
 		fi
 	;;
+
 	uninstall)
 		Check_Lock "$@"
-		echo "Uninstalling VPNFlix..."
-		sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add /jffs/scripts/firewall-start
-		ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
-		ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
-		iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
-		ipset destroy VPNFlix-Master
-		ipset destroy VPNFlix-Netflix
-		ipset destroy VPNFlix-Hulu
-		ipset destroy VPNFlix-Other
-		rm -rf /jffs/addons/vpnflix
-		echo "Complete!"
+		echo "If You Were Experiencing Issues, Try Update Or Visit SNBForums/Github For Support"
+		echo "https://github.com/Adamm00/misc"
+		echo
+		while true; do
+			echo "[!] Warning - This Will Delete All VPNFlix Related Files"
+			echo "Are You Sure You Want To Uninstall?"
+			echo
+			echo "[1]  --> Yes"
+			echo "[2]  --> No"
+			echo
+			echo "Please Select Option"
+			printf "[1-2]: "
+			read -r "continue"
+			echo
+			case "$continue" in
+				1)
+					echo "[i] Deleting VPNFlix Files"
+					sed -i '\~# VPNFlix~d' /jffs/configs/dnsmasq.conf.add /jffs/scripts/firewall-start
+					ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
+					ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
+					iptables -D PREROUTING -t mangle -m set --match-set VPNFlix-Master dst -j MARK --set-mark "$FWMARK_OVPNC1" 2>/dev/null
+					ipset destroy VPNFlix-Master
+					ipset destroy VPNFlix-Netflix
+					ipset destroy VPNFlix-Hulu
+					ipset destroy VPNFlix-Other
+					rm -rf /jffs/addons/vpnflix
+					echo "[i] Complete!"
+					echo
+					exit 0
+				;;
+				2|e|exit)
+					echo "[*] Exiting!"
+					echo; exit 0
+				;;
+				*)
+					echo "[*] $continue Isn't An Option!"
+					echo
+				;;
+			esac
+		done
 	;;
+
 	*)
 		echo "Command Not Recognized, Please Try Again"
 		echo "Accepted Commands Are; (sh $0 [start|save|disable|update|uninstall])"
@@ -208,3 +334,4 @@ case "$1" in
 esac
 
 if [ -f "/tmp/vpnflix.lock" ] && [ "$$" = "$(sed -n '2p' /tmp/vpnflix.lock)" ]; then rm -rf "/tmp/vpnflix.lock"; fi
+if [ -n "$reloadmenu" ]; then echo; echo; printf "[i] Press Enter To Continue..."; read -r "continue"; exec "$0"; fi
