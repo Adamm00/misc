@@ -88,7 +88,7 @@ if ! echo "$server" | Is_IP; then
 	echo
 	echo "Rotating IP List"
 	for serverip in $(echo "$serverlist" | grep -vf /jffs/addons/pia/pia.blacklist); do
-		if echo "$serverip" | grep -qf /jffs/addons/pia/pia.blacklist; then break; fi
+		if echo "$serverip" | grep -qf /jffs/addons/pia/pia.blacklist; then continue; fi
 		if ping -q -w3 -c1 "$serverip" >/dev/null 2>&1; then
 			nvram set "vpn_client${serverclient}_addr=$serverip"
 			nvram commit
