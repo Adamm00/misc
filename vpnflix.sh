@@ -10,7 +10,7 @@
 #                                                                                   #
 #                  Route Netflix/Hulu Traffic Thorugh VPN Client1                   #
 #                       By Adamm - https://github.com/Adamm00                       #
-#                                27/04/2020 - v1.0.1                                #
+#                                22/07/2020 - v1.0.2                                #
 #####################################################################################
 
 
@@ -42,6 +42,7 @@ Populate_Config() {
 		nflxso.net
 		nflxext.com
 		nflximg.net
+		nflximg.com
 		netflix.net"
 
 	domainlist2="\
