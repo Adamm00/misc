@@ -2,7 +2,7 @@
 
 # PIA Rotate - Rotate PIA Server IP's To Avoid Geo-Blocking
 # By Adamm - https://github.com/Adamm00
-# 22/07/2020
+# 05/11/2020
 
 if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/pia" ]; then
 	ln -s /jffs/addons/pia/pia.sh /opt/bin/pia
@@ -67,7 +67,7 @@ case "$server" in
 				nvram set "vpn_client${serverclient}_addr=$server"
 				nvram commit
 			fi
-		else
+		elif [ "$server" != "rotate" ]; then
 			echo "Error Connecting To $server"
 			exit 1
 		fi
@@ -77,7 +77,13 @@ if ! echo "$server" | Is_IP; then
 	echo
 	echo "Individual Server IP's:"
 	echo
-	serverlist="$(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2')"
+	if [ "$server" = "rotate" ]; then
+		serverlist="$(for serverurl in $(curl -fs https://www.privateinternetaccess.com/pages/network/ | sed -n 's:.*<p data-label=\"Hostname\" class=\"hostname\">\(.*\)</p>.*:\1:p' | grep -E "^us-"); do
+			nslookup "$serverurl" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2'
+		done)"
+	else
+		serverlist="$(nslookup "$server" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | awk 'NR>2')"
+	fi
 	for ip in $serverlist; do
 		if echo "$ip" | grep -qf /jffs/addons/pia/pia.blacklist; then
 			echo "$ip - [Blacklisted]"
