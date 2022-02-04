@@ -2,7 +2,7 @@
 
 # gencert.sh - Multi-Server SSL Generator
 # By Adamm - https://github.com/Adamm00
-# 26/02/2020
+# 04/02/2022
 
 PID="$$"
 SN="$(tr -dc 0-9 < /dev/urandom | head -c16)"
@@ -50,9 +50,8 @@ echo "[alt_names]" >> $OPENSSLCNF
 
 laniplist="\
 	192.168.1.1
-	192.168.1.2
-	192.168.1.69
-	192.168.1.70"
+	192.168.50.1
+	192.168.1.69"
 
 i="0"
 for ip in $laniplist; do
@@ -66,6 +65,7 @@ done >> $OPENSSLCNF
 computernamelist="\
 	SkynetNAS
 	RT-AX88U-DC28
+	RT-AX86U-38B8
 	router.asus.com"
 
 for computername in $computernamelist; do
